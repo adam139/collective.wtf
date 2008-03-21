@@ -1,14 +1,101 @@
-# This is the dict that is returned by WorkflowDefinitionConfigurator.getWorkflowInfo(),
-# in this case for plone_workflow.
+import difflib
+import unittest
+from StringIO import StringIO
 
+import zope.component
+import zope.component.testing
+
+from collective.wtf.config import DefaultConfig
+from collective.wtf.deserializer import DefaultDeserializer
+from collective.wtf.serializer import DefaultSerializer
+
+class ConfigLayer:
+    
+    @classmethod
+    def setUp(cls):
+        zope.component.provideUtility(DefaultConfig())
+
+    @classmethod
+    def tearDown(cls):
+        zope.component.testing.tearDown()
+
+class TestSerializer(unittest.TestCase):
+    
+    layer = ConfigLayer
+    
+    def test_serialize_complex(self):
+        info = plone_workflow_info.copy()
+        expected = plone_workflow_csv
+        
+        serializer = DefaultSerializer()
+        
+        output_stream = StringIO()
+        serializer(info, output_stream)
+        returned = output_stream.getvalue()
+        
+        diff = '\n'.join(difflib.unified_diff(returned.strip().splitlines(), 
+                                              expected.strip().splitlines()))
+                                         
+        self.failIf(diff, diff)
+    
+class TestDeserializer(unittest.TestCase):
+    
+    layer = ConfigLayer
+    
+    def test_deserialize_complex(self):
+        
+        deserializer = DefaultDeserializer()
+        
+        input_stream = StringIO(plone_workflow_csv)
+        info = deserializer(input_stream)
+        
+        # Basic info
+        self.assertEquals('plone_workflow', info['id'])
+        self.assertEquals('Community Workflow', info['title'])
+        self.assertEquals('visible', info['initial_state'])
+        
+        # List of states
+        self.assertEquals(sorted(['pending', 'private', 'published', 'visible' ]),
+                          sorted([s['id'] for s in info['state_info']]))
+                          
+        # Permissions of a state
+        pending_state_permissions = [s['permissions'] for s in info['state_info'] if s['id'] == 'pending'][0]
+        pending_state_permissions = dict([(p['name'], p) for p in pending_state_permissions])
+        
+        self.assertEquals(False, pending_state_permissions['View']['acquired'])
+        self.assertEquals(sorted(('Anonymous',)), sorted(pending_state_permissions['View']['roles']))
+        
+        self.assertEquals(False, pending_state_permissions['Modify portal content']['acquired'])
+        self.assertEquals(sorted(('Manager', 'Reviewer')), sorted(pending_state_permissions['Modify portal content']['roles']))
+        
+        # List of permissions (extracted as union of all managed permissions)
+        self.assertEquals(sorted(['Access contents information', 'Change portal events', 'Modify portal content', 'View']),
+                          sorted(info['permissions']))
+                          
+        # List of transitions
+        self.assertEquals(sorted(['hide', 'publish', 'reject', 'retract', 'submit', 'show']),
+                          sorted([s['id'] for s in info['transition_info']]))
+                          
+        # List of worklists
+        self.assertEquals(sorted(['reviewer-tasks']),
+                          sorted([s['id'] for s in info['worklist_info']]))
+        
+def test_suite():
+    from unittest import TestSuite, makeSuite
+    suite = TestSuite()
+    suite.addTest(makeSuite(TestSerializer))
+    suite.addTest(makeSuite(TestDeserializer))
+    return suite
+
+plone_workflow_info = \
 {'description': " - Users can create content that is immediately publicly accessible. - Content can be submitted for publication by the content's creator or a Manager, which is typically done to promote events or news to the front page. - Reviewers can publish or reject content, content owners can retract their submissions. - While the content is awaiting review it is readable by anybody. - If content is published, it can only be retracted by a Manager.",
  'id': 'plone_workflow',
  'initial_state': 'visible',
  'meta_type': 'Workflow',
- 'permissions': ('Access contents information',
+ 'permissions': ['Access contents information',
                  'Change portal events',
                  'Modify portal content',
-                 'View'),
+                 'View'],
  'script_info': [],
  'state_info': [{'description': 'Waiting to be reviewed, not editable by the owner.\n',
                  'groups': [],
@@ -254,3 +341,126 @@
                     'id': 'reviewer_queue',
                     'title': '',
                     'var_match': [('review_state', 'pending')]}]}
+                    
+plone_workflow_csv = """\
+[Workflow]
+Id:,plone_workflow
+Title:,Community Workflow
+Description:,"- Users can create content that is immediately publicly accessible. - Content can be submitted for publication by the content's creator or a Manager, which is typically done to promote events or news to the front page. - Reviewers can publish or reject content, content owners can retract their submissions. - While the content is awaiting review it is readable by anybody. - If content is published, it can only be retracted by a Manager."
+Initial state:,visible
+
+[State]
+Id:,pending
+Title:,Pending review
+Description:,"Waiting to be reviewed, not editable by the owner."
+Transitions,"hide, publish, reject, retract"
+Worklist:,Reviewer tasks
+Worklist label:,Pending (%(count)d)
+Worklist guard permission:,Review portal content
+Worklist guard role:,
+Worklist guard expression:,
+Permissions,Acquire,Anonymous,Manager,Owner,Reader,Editor,Contributor,Reviewer
+Access contents information,N,Y,N,N,N,N,N,N
+View,N,Y,N,N,N,N,N,N
+Modify portal content,N,N,Y,N,N,N,N,Y
+Change portal events,N,N,Y,N,N,N,N,Y
+
+[State]
+Id:,private
+Title:,Private
+Description:,Can only be seen and edited by the owner.
+Transitions,show
+Permissions,Acquire,Anonymous,Manager,Owner,Reader,Editor,Contributor,Reviewer
+Access contents information,N,N,Y,Y,Y,Y,Y,N
+View,N,N,Y,Y,Y,Y,Y,N
+Modify portal content,N,N,Y,Y,N,Y,N,N
+Change portal events,N,N,Y,Y,N,Y,N,N
+
+[State]
+Id:,published
+Title:,Published
+Description:,"Visible to everyone, not editable by the owner."
+Transitions,"reject, retract"
+Permissions,Acquire,Anonymous,Manager,Owner,Reader,Editor,Contributor,Reviewer
+Access contents information,N,Y,N,N,N,N,N,N
+View,N,Y,N,N,N,N,N,N
+Modify portal content,N,N,Y,N,N,N,N,N
+Change portal events,N,N,Y,N,N,N,N,N
+
+[State]
+Id:,visible
+Title:,Public draft
+Description:,"Visible to everyone, but not approved by the reviewers."
+Transitions,"hide, publish, submit"
+Permissions,Acquire,Anonymous,Manager,Owner,Reader,Editor,Contributor,Reviewer
+Access contents information,N,Y,N,N,N,N,N,N
+View,N,Y,N,N,N,N,N,N
+Modify portal content,N,N,Y,Y,N,Y,N,N
+Change portal events,N,N,Y,Y,N,Y,N,N
+
+[Transition]
+Id:,hide
+Target state:,private
+Title:,Make private
+Description:,Member makes content private
+Details:,Making an item private means that it will not be visible to anyone but the owner and the site administrator.
+Trigger:,User
+Guard permission:,Modify portal content
+Guard role:,
+Guard expression:,
+
+[Transition]
+Id:,publish
+Target state:,published
+Title:,Publish
+Description:,Reviewer publishes content
+Details:,Publishing the item makes it visible to other users.
+Trigger:,User
+Guard permission:,Review portal content
+Guard role:,
+Guard expression:,
+
+[Transition]
+Id:,reject
+Target state:,visible
+Title:,Send back
+Description:,Reviewer sends content back for re-drafting
+Details:,Sending the item back will return the item to the original author instead of publishing it. You should preferably include a reason for why it was not published.
+Trigger:,User
+Guard permission:,Review portal content
+Guard role:,
+Guard expression:,
+
+[Transition]
+Id:,retract
+Target state:,visible
+Title:,Retract
+Description:,Member retracts submission
+Details:,"If you submitted the item by mistake or want to perform additional edits, this will take it back."
+Trigger:,User
+Guard permission:,Request review
+Guard role:,
+Guard expression:,
+
+[Transition]
+Id:,show
+Target state:,visible
+Title:,Promote to Draft
+Description:,Member promotes content to public draft
+Details:,Promotes your private item to a public draft.
+Trigger:,User
+Guard permission:,Modify portal content
+Guard role:,
+Guard expression:,
+
+[Transition]
+Id:,submit
+Target state:,pending
+Title:,Submit for publication
+Description:,Member submits content for publication
+Details:,"Puts your item in a review queue, so it can be published on the site."
+Trigger:,User
+Guard permission:,Request review
+Guard role:,
+Guard expression:,
+"""                    

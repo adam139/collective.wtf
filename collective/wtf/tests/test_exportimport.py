@@ -77,6 +77,11 @@ class TestGenericSetup(PloneTestCase):
     
     layer = GSLayer
     
+    def test_import(self):
+        self.failUnless('test_wf' in self.portal.portal_workflow.objectIds())
+        self.assertEquals('State one', self.portal.portal_workflow.test_wf.states.state_one.title)
+        self.assertEquals('Make it state two', self.portal.portal_workflow.test_wf.transitions.to_state_two.actbox_name)
+    
     def test_export(self):
         wf = self.portal.portal_workflow.plone_workflow
         context = TarballExportContext(self.portal.portal_setup)
@@ -94,8 +99,7 @@ Id:,pending
 Title:,Pending review
 Description:,"Waiting to be reviewed, not editable by the owner."
 Transitions,"hide, publish, reject, retract"
-Worklist:,"Reviewer tasks
-"
+Worklist:,Reviewer tasks
 Worklist label:,Pending (%(count)d)
 Worklist guard permission:,Review portal content
 Worklist guard role:,
@@ -143,10 +147,9 @@ Change portal events,N,N,Y,Y,N,Y,N,N
 Id:,hide
 Target state:,private
 Title:,Make private
-Description:,Making an item private means that it will not be visible to anyone but the owner and the site administrator.
+Description:,Member makes content private
+Details:,Making an item private means that it will not be visible to anyone but the owner and the site administrator.
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Modify portal content
 Guard role:,
 Guard expression:,
@@ -155,10 +158,9 @@ Guard expression:,
 Id:,publish
 Target state:,published
 Title:,Publish
-Description:,Publishing the item makes it visible to other users.
+Description:,Reviewer publishes content
+Details:,Publishing the item makes it visible to other users.
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Review portal content
 Guard role:,
 Guard expression:,
@@ -167,10 +169,9 @@ Guard expression:,
 Id:,reject
 Target state:,visible
 Title:,Send back
-Description:,Sending the item back will return the item to the original author instead of publishing it. You should preferably include a reason for why it was not published.
+Description:,Reviewer sends content back for re-drafting
+Details:,Sending the item back will return the item to the original author instead of publishing it. You should preferably include a reason for why it was not published.
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Review portal content
 Guard role:,
 Guard expression:,
@@ -179,10 +180,9 @@ Guard expression:,
 Id:,retract
 Target state:,visible
 Title:,Retract
-Description:,"If you submitted the item by mistake or want to perform additional edits, this will take it back."
+Description:,Member retracts submission
+Details:,"If you submitted the item by mistake or want to perform additional edits, this will take it back."
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Request review
 Guard role:,
 Guard expression:,
@@ -191,10 +191,9 @@ Guard expression:,
 Id:,show
 Target state:,visible
 Title:,Promote to Draft
-Description:,Promotes your private item to a public draft.
+Description:,Member promotes content to public draft
+Details:,Promotes your private item to a public draft.
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Modify portal content
 Guard role:,
 Guard expression:,
@@ -203,10 +202,9 @@ Guard expression:,
 Id:,submit
 Target state:,pending
 Title:,Submit for publication
-Description:,"Puts your item in a review queue, so it can be published on the site."
+Description:,Member submits content for publication
+Details:,"Puts your item in a review queue, so it can be published on the site."
 Trigger:,User
-Script before:,
-Script after:,
 Guard permission:,Request review
 Guard role:,
 Guard expression:,
