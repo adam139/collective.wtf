@@ -25,9 +25,16 @@ setup(name='collective.wtf',
       zip_safe=False,
       install_requires=[
           'setuptools',
-          # -*- Extra requirements: -*-
+          'zope.interface',
+          'zope.component',
+          'Products.CMFCore',
+          'Products.DCWorkflow',
+          'Products.GenericSetup',
+          'plone.memoize',
+          
       ],
       entry_points="""
-      # -*- Entry points: -*-
+      [z3c.autoinclude.plugin]
+      target = plone
       """,
       )
