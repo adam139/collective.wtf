@@ -6,7 +6,7 @@ Changelog
 
 * Now imports/exports meta_type, in order to support workflows defined with
   collective.reactiveworkflow.
-  [optildue]
+  [optilude]
 
 1.0b5
 -----
