@@ -1,0 +1,48 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="collective.wtf">
+
+    <!-- Dependencies -->
+    <include package=".browser" />
+    
+    <!-- Configuration and services -->
+    
+    <utility factory=".config.DefaultConfig" />
+    <utility factory=".serializer.DefaultSerializer" />
+    <utility factory=".deserializer.DefaultDeserializer" />
+    
+    <!-- Register the body export adapter -->
+    <adapter
+        factory=".exportimport.DCWorkflowDefinitionBodyAdapter"
+        name="collective.wtf"
+        />
+    
+    <!-- Register import and export steps -->
+    <genericsetup:importStep
+        name="workflow-csv"
+        title="Workflow definitions (CSV)"
+        description="Workflow definitions in CSV format"
+        handler=".exportimport.importCSVWorkflow">
+        <depends name="workflow"/>
+    </genericsetup:importStep>
+
+    <genericsetup:exportStep
+        name="workflow-csv"
+        title="Workflow definitions (CSV)"
+        description="Workflow definitions in CSV format"
+        handler=".exportimport.exportCSVWorkflow"
+        />
+        
+    <!-- Sanity checker -->
+    
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.StateVariable" />
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.CorePermissions" />
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.AnonymousPreference" />
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.ViewVsAccess" />
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.LocalRoleCorrelation" />
+    <subscriber provides=".interfaces.ISanityChecker" factory=".verify.WorkflowVariables" />
+
+        
+</configure>

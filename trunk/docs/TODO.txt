@@ -1,0 +1,7 @@
+======================
+collective.wtf - to-do
+======================
+
+ o Clean up logging
+ 
+ o Improve test coverage for exception/graceful recovery cases
