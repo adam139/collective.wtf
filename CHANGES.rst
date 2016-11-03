@@ -1,8 +1,11 @@
 Changelog
 =========
 
-1.0b10
-------
+1.0b10 (unreleased)
+-------------------
+
+* Moved to github: https://github.com/collective/collective.wtf.
+  [maurits]
 
 * Made compatible with Plone 4.1 by loading the permissions.zcml from
   Products.CMFCore (only when plone.app.upgrade is available, to keep
@@ -11,6 +14,7 @@ Changelog
 
 * Avoid a deprecation warning for InitializeClass in Zope 2.12.
   [hannosch]
+
 
 1.0b9
 -----
@@ -72,4 +76,3 @@ Changelog
 
 * Add the ability to display roles in any context via a simple browser view
   [optilude]
-
