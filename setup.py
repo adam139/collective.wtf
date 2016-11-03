@@ -5,7 +5,8 @@ version = '1.0b10'
 setup(
     name='collective.wtf',
     version=version,
-    description="GenericSetup importer and exporter for workflow definitions that uses CSV instead of XML",
+    description=("GenericSetup importer and exporter for workflow definitions "
+                 "that uses CSV instead of XML"),
     long_description=(open("README.rst").read() + "\n" +
                       open("CHANGES.rst").read()),
     # Get more strings from
