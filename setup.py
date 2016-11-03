@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
-import os
 
 version = '1.0b10'
 
 setup(name='collective.wtf',
       version=version,
       description="GenericSetup importer and exporter for workflow definitions that uses CSV instead of XML",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=(open("README.rst").read() + "\n" +
+                        open("CHANGES.rst").read()),
       # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
       classifiers=[
         "Framework :: Plone",
@@ -31,7 +30,7 @@ setup(name='collective.wtf',
           'Products.DCWorkflow',
           'Products.GenericSetup',
           'plone.memoize',
-          
+
       ],
       entry_points="""
       [z3c.autoinclude.plugin]
