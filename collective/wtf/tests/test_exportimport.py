@@ -29,17 +29,17 @@ zcml_string = """\
     <gs:registerProfile
         name="testing"
         title="collective.wtf testing"
-        description="Used for testing only" 
+        description="Used for testing only"
         directory="tests/profiles/testing"
         for="Products.CMFCore.interfaces.ISiteRoot"
         provides="Products.GenericSetup.interfaces.EXTENSION"
         />
-        
+
 </configure>
 """
 
 class ZCMLLayer(PloneSite):
-    
+
     @classmethod
     def setUp(cls):
         fiveconfigure.debug_mode = True
@@ -51,19 +51,19 @@ class ZCMLLayer(PloneSite):
     @classmethod
     def tearDown(cls):
         pass
-        
+
 class GSLayer(ZCMLLayer):
-    
+
     @classmethod
     def setUp(cls):
         app = ZopeTestCase.app()
         portal = app.plone
-        
+
         portal_setup = portal.portal_setup
         # wait a bit or we get duplicate ids on import
         time.sleep(1)
         portal_setup.runAllImportStepsFromProfile('profile-collective.wtf:testing')
-        
+
         transaction.commit()
         ZopeTestCase.close(app)
 
@@ -74,36 +74,36 @@ class GSLayer(ZCMLLayer):
 class TestGenericSetup(PloneTestCase):
     """
     """
-    
+
     layer = GSLayer
-    
+
     def test_import(self):
         self.failUnless('test_wf' in self.portal.portal_workflow.objectIds())
         self.assertEquals('State one', self.portal.portal_workflow.test_wf.states.state_one.title)
         self.assertEquals('Make it state two', self.portal.portal_workflow.test_wf.transitions.to_state_two.actbox_name)
-        
+
         self.failUnless('shared_script' in self.portal.portal_workflow.test_wf.scripts.objectIds())
         self.failUnless('test_scripts.inline_test_one' in self.portal.portal_workflow.test_wf.scripts.objectIds())
         self.failUnless('test_scripts.inline_test_two' in self.portal.portal_workflow.test_wf.scripts.objectIds())
-    
+
     def test_export_standard(self):
         wf = self.portal.portal_workflow.plone_workflow
         context = TarballExportContext(self.portal.portal_setup)
         handler = getMultiAdapter((wf, context), IBody, name=u'collective.wtf')
-        
+
         expected = plone_workflow_csv
 
         body = handler.body
-        
+
         diff = '\n'.join(list(difflib.unified_diff(body.strip().splitlines(), expected.strip().splitlines())))
-                                         
+
         self.failIf(diff, diff)
 
     def test_export_imported(self):
         wf = self.portal.portal_workflow.test_wf
         context = TarballExportContext(self.portal.portal_setup)
         handler = getMultiAdapter((wf, context), IBody, name=u'collective.wtf')
-        
+
         expected = """\
 [Workflow]
 Id:,test_wf
@@ -198,11 +198,11 @@ Function:,inline_test_two
 """
 
         body = handler.body
-        
+
         diff = '\n'.join(list(difflib.unified_diff(body.strip().splitlines(), expected.strip().splitlines())))
-                                         
+
         self.failIf(diff, diff)
-        
+
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()

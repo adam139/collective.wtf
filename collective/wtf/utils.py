@@ -6,11 +6,11 @@ def trigger_automatic_transitions(context, event=None):
     given object, going through teh workflow chain in reverse order. This
     allows a transition in a workflow lower down the chain to cause another
     transition in a workflow higher up the chain.
-    
+
     It is possible to register this for the IActionSucceededEvent object event
     so that it takes place automatically on each transition for a given object
     type:
-    
+
       <subscriber
           for=".interfaces.IMyType
                Products.CMFCore.interfaces.IActionSucceededEvent"
@@ -36,11 +36,11 @@ def trigger_automatic_transitions(context, event=None):
 
 def trigger_automatic_transitions_in_parent(context, event=None):
     """Trigger automatic transitions in the parent of context.
-    
+
     It is possible to register this for the IActionSucceededEvent object event
     so that it takes place automatically on each transition for a given object
     type:
-    
+
       <subscriber
           for=".interfaces.IMyType
                Products.CMFCore.interfaces.IActionSucceededEvent"

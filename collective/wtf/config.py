@@ -4,12 +4,12 @@ from collective.wtf.interfaces import ICSVWorkflowConfig
 
 class DefaultConfig(object):
     implements(ICSVWorkflowConfig)
-    
+
     known_roles = ['Anonymous', 'Manager', 'Owner', 'Reader', 'Editor', 'Contributor']
     known_permissions = ['Access contents information', 'View', 'Modify portal content']
-    
+
     # remember to call .copy() when using these!
-        
+
     info_template = {'id': '',
                      'title': '',
                      'description': "",
@@ -83,7 +83,7 @@ class DefaultConfig(object):
                                         'guard_roles': (),
                                         'id': 'time',
                                         'update_always': True}],}
-                
+
     state_template = {'id': '',
                       'title': '',
                       'description': '',
@@ -91,11 +91,11 @@ class DefaultConfig(object):
                       'groups': [],
                       'permissions': [],
                       'variables': []}
-                      
+
     state_permission_template = {'acquired': False,
                                  'name': '',
                                  'roles': ()}
-                                 
+
     transition_template = {'id': '',
                            'title': '',
                            'description': '',
@@ -112,7 +112,7 @@ class DefaultConfig(object):
                            'guard_permissions': (),
                            'guard_roles': (),
                            'variables': []}
-                           
+
     worklist_template = {'id': '',
                          'title': '',
                          'description': '',
@@ -131,4 +131,4 @@ class DefaultConfig(object):
                        'module': '',
                        'function': '',
                        'filename': ''}
-                       
+

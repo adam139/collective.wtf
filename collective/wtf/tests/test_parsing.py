@@ -10,7 +10,7 @@ from collective.wtf.deserializer import DefaultDeserializer
 from collective.wtf.serializer import DefaultSerializer
 
 class ConfigLayer:
-    
+
     @classmethod
     def setUp(cls):
         zope.component.provideUtility(DefaultConfig())
@@ -20,66 +20,66 @@ class ConfigLayer:
         zope.component.testing.tearDown()
 
 class TestSerializer(unittest.TestCase):
-    
+
     layer = ConfigLayer
-    
+
     def test_serialize_complex(self):
         info = plone_workflow_info.copy()
         expected = plone_workflow_csv
-        
+
         serializer = DefaultSerializer()
-        
+
         output_stream = StringIO()
         serializer(info, output_stream)
         returned = output_stream.getvalue()
-        
-        diff = '\n'.join(difflib.unified_diff(returned.strip().splitlines(), 
+
+        diff = '\n'.join(difflib.unified_diff(returned.strip().splitlines(),
                                               expected.strip().splitlines()))
-                                         
+
         self.failIf(diff, diff)
-    
+
 class TestDeserializer(unittest.TestCase):
-    
+
     layer = ConfigLayer
-    
+
     def test_deserialize_complex(self):
-        
+
         deserializer = DefaultDeserializer()
-        
+
         input_stream = StringIO(plone_workflow_csv)
         info = deserializer(input_stream)
-        
+
         # Basic info
         self.assertEquals('plone_workflow', info['id'])
         self.assertEquals('Community Workflow', info['title'])
         self.assertEquals('visible', info['initial_state'])
-        
+
         # List of states
         self.assertEquals(sorted(['pending', 'private', 'published', 'visible' ]),
                           sorted([s['id'] for s in info['state_info']]))
-                          
+
         # Permissions of a state
         pending_state_permissions = [s['permissions'] for s in info['state_info'] if s['id'] == 'pending'][0]
         pending_state_permissions = dict([(p['name'], p) for p in pending_state_permissions])
-        
+
         self.assertEquals(False, pending_state_permissions['View']['acquired'])
         self.assertEquals(sorted(('Anonymous',)), sorted(pending_state_permissions['View']['roles']))
-        
+
         self.assertEquals(False, pending_state_permissions['Modify portal content']['acquired'])
         self.assertEquals(sorted(('Manager', 'Reviewer')), sorted(pending_state_permissions['Modify portal content']['roles']))
-        
+
         # List of permissions (extracted as union of all managed permissions)
         self.assertEquals(sorted(['Access contents information', 'Change portal events', 'Modify portal content', 'View']),
                           sorted(info['permissions']))
-                          
+
         # List of transitions
         self.assertEquals(sorted(['hide', 'publish', 'reject', 'retract', 'submit', 'show']),
                           sorted([s['id'] for s in info['transition_info']]))
-                          
+
         # List of worklists
         self.assertEquals(sorted(['reviewer-tasks']),
                           sorted([s['id'] for s in info['worklist_info']]))
-        
+
 def test_suite():
     from unittest import TestSuite, makeSuite
     suite = TestSuite()
@@ -341,7 +341,7 @@ plone_workflow_info = \
                     'id': 'reviewer_queue',
                     'title': '',
                     'var_match': [('review_state', 'pending')]}]}
-                    
+
 plone_workflow_csv = """\
 [Workflow]
 Id:,plone_workflow
@@ -459,4 +459,4 @@ Target state:,pending
 URL:,%(content_url)s/content_status_modify?workflow_action=submit
 Trigger:,User
 Guard permission:,Request review
-"""                    
+"""

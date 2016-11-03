@@ -18,21 +18,21 @@
         />
 
     <!-- Workflow sanity check -->
-    
+
     <browser:page
         name="sanity-check"
         for="Products.DCWorkflow.interfaces.IDCWorkflowDefinition"
         class=".sanitycheck.SanityCheck"
         permission="zope2.View"
         />
-        
+
     <!-- Ad-hoc export -->
-    
+
     <browser:page
         name="to-csv"
         for="Products.DCWorkflow.interfaces.IDCWorkflowDefinition"
         class=".tocsv.ToCSV"
         permission="zope2.View"
         />
-        
+
 </configure>

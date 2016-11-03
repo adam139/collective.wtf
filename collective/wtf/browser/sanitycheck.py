@@ -12,32 +12,32 @@ class SanityCheck(BrowserView):
     """
 
     def __call__(self):
-        
+
         # Lazy stuff - this should be put into a proper template
-        
+
         messages = self.messages()
         out = StringIO()
-        
+
         print >> out, "Status report for workflow:", self.context.getId()
         print >> out
-        
+
         if messages:
             print >> out, "Found some problems."
             print >> out
-            
+
             for message in messages:
                 print >> out, message
                 print >> out
         else:
             print >> out, "Nothing to report."
-        
+
         return out.getvalue()
-        
+
     @memoize
     def messages(self):
         """Get all messages
         """
-        
+
         messages = []
         for checker in subscribers((self.context,), ISanityChecker):
             new_messages = checker()

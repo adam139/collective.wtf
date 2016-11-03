@@ -11,7 +11,7 @@ from collective.wtf.exportimport import CSVWorkflowDefinitionConfigurator
 
 class BaseChecker(object):
     implements(ISanityChecker)
-    
+
     def __init__(self, context):
         self.context = context
 
@@ -22,21 +22,21 @@ class BaseChecker(object):
 
 class StateVariable(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     expected_state_variable = 'review_state'
-    
+
     def __call__(self):
         messages = []
         state_variable = self.info()['state_variable']
         if state_variable != self.expected_state_variable:
             messages.append("The state variable should be '%s', but is defined as '%s'" % (self.expected_state_variable, state_variable))
         return messages
-    
+
 class CorePermissions(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     expected_permissions = set((cmf_permissions.View, cmf_permissions.AccessContentsInformation, cmf_permissions.ModifyPortalContent),)
-    
+
     def __call__(self):
         messages = []
         for state in self.info()['state_info']:
@@ -44,10 +44,10 @@ class CorePermissions(BaseChecker):
             for name in missing:
                 messages.append("State '%s' does not assign roles to the core permission '%s'" % (state['id'], name))
         return messages
-    
+
 class AnonymousPreference(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     def __call__(self):
         messages = []
         for state in self.info()['state_info']:
@@ -56,10 +56,10 @@ class AnonymousPreference(BaseChecker):
                 if 'Anonymous' in roles and len(roles) > 1:
                     messages.append("State '%s' grants permission '%s' to Anonymous. Other role assignments are superfluous." % (state['id'], permission['name']))
         return messages
-    
+
 class ViewVsAccess(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     def __call__(self):
         messages = []
         for state in self.info()['state_info']:
@@ -73,18 +73,18 @@ class ViewVsAccess(BaseChecker):
 
 class LocalRoleCorrelation(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     permissions_for_owner_and_reader = set((cmf_permissions.View, cmf_permissions.AccessContentsInformation,))
     permissions_for_owner_and_editor = set((cmf_permissions.View, cmf_permissions.AccessContentsInformation, cmf_permissions.ModifyPortalContent))
-    permissions_for_owner_and_contributor = set((cmf_permissions.View, cmf_permissions.AccessContentsInformation, cmf_permissions.AddPortalContent))    
-    
+    permissions_for_owner_and_contributor = set((cmf_permissions.View, cmf_permissions.AccessContentsInformation, cmf_permissions.AddPortalContent))
+
     def __call__(self):
         messages = []
         self._role_correlation(messages, self.permissions_for_owner_and_reader, 'Owner', 'Reader')
         self._role_correlation(messages, self.permissions_for_owner_and_editor, 'Owner', 'Editor')
         self._role_correlation(messages, self.permissions_for_owner_and_contributor, 'Owner', 'Contributor')
         return messages
-    
+
     def _role_correlation(self, messages, permission_set, role1, role2):
         for state in self.info()['state_info']:
             for permission in state['permissions']:
@@ -94,12 +94,12 @@ class LocalRoleCorrelation(BaseChecker):
                         messages.append("State '%s' grants permission '%s' to '%s', but not to '%s'" % (state['id'], permission['name'], role1, role2,))
                     elif role1 not in roles and role2 in roles:
                         messages.append("State '%s' grants permission '%s' to '%s', but not to '%s'" % (state['id'], permission['name'], role1, role2,))
-    
+
 class WorkflowVariables(BaseChecker):
     adapts(IDCWorkflowDefinition)
-    
+
     expected_variables = set(('action', 'actor', 'comments', 'review_history', 'time'))
-    
+
     def __call__(self):
         messages = []
         variable_ids = set([v['id'] for v in self.info()['variable_info']])
