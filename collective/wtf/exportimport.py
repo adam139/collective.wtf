@@ -123,7 +123,7 @@ class DCWorkflowDefinitionBodyAdapter(BodyAdapterBase):
             , transitions
             , variables
             , worklists
-            , permissions
+            , groups
             , scripts
             , description
             ) = wfdc.parseWorkflowXML(xml_body, encoding)
@@ -141,7 +141,7 @@ class DCWorkflowDefinitionBodyAdapter(BodyAdapterBase):
                            , scripts
                            , self.environ
                            )
-        except (ValueError, TypeError,): # CMF 2.2 / Plone 4
+        except (ValueError, TypeError,): # CMF 2.2 / Plone 4 dc workflow >2.2.3
             ( workflow_id
             , title
             , state_variable
@@ -151,6 +151,7 @@ class DCWorkflowDefinitionBodyAdapter(BodyAdapterBase):
             , variables
             , worklists
             , permissions
+            , groups
             , scripts
             , description
             , manager_bypass
@@ -169,6 +170,7 @@ class DCWorkflowDefinitionBodyAdapter(BodyAdapterBase):
                            , variables
                            , worklists
                            , permissions
+                           , groups
                            , scripts
                            , self.environ
                            )

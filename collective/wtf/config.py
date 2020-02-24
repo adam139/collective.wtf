@@ -16,6 +16,7 @@ class DefaultConfig(object):
                      'state_variable': 'review_state',
                      'initial_state': '',
                      'permissions': [],
+                     'groups':[],
                      'script_info': [],
                      'state_info': [],
                      'transition_info': [],
