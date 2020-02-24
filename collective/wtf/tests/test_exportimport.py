@@ -10,14 +10,17 @@ from Products.Five import fiveconfigure
 from Products.GenericSetup.interfaces import IBody
 from Products.GenericSetup.context import TarballExportContext
 
-from Products.PloneTestCase.PloneTestCase import PloneTestCase
-from Products.PloneTestCase.PloneTestCase import setupPloneSite
-from Products.PloneTestCase.layer import PloneSite
+from plone.app.testing import FunctionalTesting
+from plone.app.testing import IntegrationTesting
+from plone.app.testing import PLONE_FIXTURE
+from plone.app.testing import PloneSandboxLayer
+from plone.app.testing import applyProfile
+from plone.testing import z2
+from zope.configuration import xmlconfig
 from Testing import ZopeTestCase
-
+import unittest
 from collective.wtf.tests.test_parsing import plone_workflow_csv
 
-setupPloneSite()
 
 zcml_string = """\
 <configure xmlns="http://namespaces.zope.org/zope"
@@ -37,47 +40,47 @@ zcml_string = """\
 
 </configure>
 """
+class Base(PloneSandboxLayer):
 
-class ZCMLLayer(PloneSite):
+    defaultBases = (PLONE_FIXTURE,)
 
-    @classmethod
-    def setUp(cls):
-        fiveconfigure.debug_mode = True
-        zcml.load_string(zcml_string)
+    def setUpZope(self, app, configurationContext):
+
         import collective.wtf
-        zcml.load_config('configure.zcml', collective.wtf)
-        fiveconfigure.debug_mode = False
+        xmlconfig.file(
+            'configure.zcml',
+            collective.wtf,
+            context=configurationContext
+        )
+      
 
-    @classmethod
-    def tearDown(cls):
+    def setUpPloneSite(self, portal):
+        applyProfile(portal, 'collective.wtf:testing')
+        self.portal = portal
+
+
+    def tearDownZope(self, app):
         pass
 
-class GSLayer(ZCMLLayer):
 
-    @classmethod
-    def setUp(cls):
-        app = ZopeTestCase.app()
-        portal = app.plone
+_FIXTURE = Base()
+INTEGRATION_TESTING = IntegrationTesting(
+    bases=(_FIXTURE,),
+    name="CollectiveWtf:Integration"
+)
 
-        portal_setup = portal.portal_setup
-        # wait a bit or we get duplicate ids on import
-        time.sleep(1)
-        portal_setup.runAllImportStepsFromProfile('profile-collective.wtf:testing')
 
-        transaction.commit()
-        ZopeTestCase.close(app)
 
-    @classmethod
-    def tearDown(cls):
-        pass
-
-class TestGenericSetup(PloneTestCase):
+class TestGenericSetup(unittest.TestCase):
     """
     """
 
-    layer = GSLayer
+    layer = INTEGRATION_TESTING
+
 
     def test_import(self):
+
+        self.portal = self.layer['portal']
         self.failUnless('test_wf' in self.portal.portal_workflow.objectIds())
         self.assertEquals('State one', self.portal.portal_workflow.test_wf.states.state_one.title)
         self.assertEquals('Make it state two', self.portal.portal_workflow.test_wf.transitions.to_state_two.actbox_name)
@@ -87,6 +90,8 @@ class TestGenericSetup(PloneTestCase):
         self.failUnless('test_scripts.inline_test_two' in self.portal.portal_workflow.test_wf.scripts.objectIds())
 
     def test_export_standard(self):
+        
+        self.portal = self.layer['portal']
         wf = self.portal.portal_workflow.plone_workflow
         context = TarballExportContext(self.portal.portal_setup)
         handler = getMultiAdapter((wf, context), IBody, name=u'collective.wtf')
@@ -97,9 +102,11 @@ class TestGenericSetup(PloneTestCase):
 
         diff = '\n'.join(list(difflib.unified_diff(body.strip().splitlines(), expected.strip().splitlines())))
 
-        self.failIf(diff, diff)
+        self.assertFalse(diff, diff)
 
     def test_export_imported(self):
+        
+        self.portal = self.layer['portal']
         wf = self.portal.portal_workflow.test_wf
         context = TarballExportContext(self.portal.portal_setup)
         handler = getMultiAdapter((wf, context), IBody, name=u'collective.wtf')

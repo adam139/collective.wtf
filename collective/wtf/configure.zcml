@@ -18,6 +18,15 @@
         factory=".exportimport.DCWorkflowDefinitionBodyAdapter"
         name="collective.wtf"
         />
+    <genericsetup:registerProfile
+        name="testing"
+        title="collective.wtf testing"
+        description="Used for testing only"
+        directory="tests/profiles/testing"
+        for="Products.CMFCore.interfaces.ISiteRoot"
+        provides="Products.GenericSetup.interfaces.EXTENSION"
+        />
+
 
     <!-- Register import and export steps -->
     <genericsetup:importStep
