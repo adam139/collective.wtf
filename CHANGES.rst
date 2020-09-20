@@ -8,7 +8,7 @@ Changelog
   [adam]
 
 
-* fix:something has changed in Products.DCWorkflow 2.2.5 : unable to use a csv workflow with collective.wtf #8.
+* fix:something has changed in Products.DCWorkflow 2.2.5 : unable to use a csv workflow with collective.wtf `#8 <https://github.com/zopefoundation/Products.DCWorkflow/issues/8>`_ .
   [adam]
 
 
