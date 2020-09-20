@@ -1,6 +1,15 @@
 Changelog
 =========
 
+1.0b11 (unreleased)
+-------------------
+
+* use plone.app.testing fix tests.
+
+
+* fix:something has changed in Products.DCWorkflow 2.2.5 : unable to use a csv workflow with collective.wtf #8.
+
+
 1.0b10 (unreleased)
 -------------------
 
